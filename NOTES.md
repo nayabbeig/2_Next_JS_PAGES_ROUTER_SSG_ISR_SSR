@@ -171,4 +171,106 @@ export default function Page() {
 
 ---
 
-If you want, I can turn this into a **color-coded diagram + timeline chart** so you visually see how **SSG, ISR, SSR** differ in execution. That will make the revision even quicker.
+## **📊 Rendering Flow Diagrams**
+
+---
+
+### **1️⃣ SSG (Static Site Generation)**
+
+```plaintext
+Build Time
+   |
+   ├─ getStaticPaths() → find all possible routes
+   |
+   ├─ getStaticProps() → fetch data for each route
+   |
+   ├─ HTML + JSON generated → stored on server/CDN
+   |
+User Requests Page
+   |
+   ├─ HTML served instantly (from CDN)
+   |
+   └─ Browser hydrates with React (for interactivity)
+```
+
+💡 **Key**: Built **once** at build time. Same HTML served to all users until you rebuild.
+
+---
+
+### **2️⃣ ISR (Incremental Static Regeneration)**
+
+```plaintext
+Build Time
+   |
+   ├─ getStaticPaths() → find initial routes
+   |
+   ├─ getStaticProps() → fetch data for each route
+   |
+   ├─ HTML + JSON generated → stored on server/CDN
+   |
+User Requests Page
+   |
+   ├─ If cache is fresh → serve existing HTML
+   |
+   ├─ If cache is stale (after `revalidate` seconds):
+   |      ├─ Serve stale page immediately
+   |      └─ In background → run getStaticProps(), regenerate page
+   |
+   └─ New visitors get updated page after regeneration finishes
+```
+
+💡 **Key**: Like SSG, but **auto-refreshes** content in background after `revalidate` time.
+
+---
+
+### **3️⃣ SSR (Server-Side Rendering)**
+
+```plaintext
+User Requests Page
+   |
+   ├─ Server runs getServerSideProps()
+   |       └─ Fetch data from DB/API
+   |
+   ├─ Generate HTML for that request
+   |
+   ├─ Send HTML + JSON to browser
+   |
+   └─ Browser hydrates with React (for interactivity)
+```
+
+💡 **Key**: Always **fresh** data. Runs **every request** — slower than SSG/ISR but up-to-date.
+
+---
+
+### **📊 Visual Flow Comparison**
+
+```plaintext
+SSG
+────
+Build Time → getStaticPaths → getStaticProps → Generate HTML → Serve same HTML to all users
+
+ISR
+────
+Build Time → getStaticPaths → getStaticProps → Generate HTML → Serve cached HTML
+          → After revalidate: regenerate page in background → Serve updated HTML next time
+
+SSR
+────
+User Request → getServerSideProps (fetch data) → Generate HTML on server → Send to browser
+```
+
+---
+
+💡 **Key memory hook**:
+
+* **SSG** = "Set it and forget it" until rebuild
+* **ISR** = "Set it, but refresh it occasionally"
+* **SSR** = "Make it fresh every single time"
+
+---
+
+
+
+# Topic To Explore In Future
+
+- Include tricky edge cases like hydration mismatches, revalidate race conditions, and fallback quirks so you’re ready for real-world gotchas
